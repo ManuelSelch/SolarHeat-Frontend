@@ -18,7 +18,7 @@ type Status = {
   time: number;
 }
 
-const backend = "https://solar-heat-backend.manuelselch.de";
+const backend = "https://solar-heat.manuelselch.de";
 
 function parseTime(time: Date) {
   const hours = time.getHours().toString().padStart(2, '0');
