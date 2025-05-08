@@ -32,7 +32,7 @@ function parseTime(time: Date) {
 export default function Dashboard() {
     const [data, setData] = useState<Temperature[]>([]);
     const [status, setStatus] = useState<Status>({dif: 0, time: 0});
-    const [timePeriod, setTimePeriod] = useState('hour');
+    const [timePeriod, setTimePeriod] = useState('day');
     const [time, setTime] = useState<string>("00:00");
     
     const fetchStatus = async () => {
@@ -68,14 +68,14 @@ export default function Dashboard() {
       let filteredData;
   
       switch (timePeriod) {
-        case 'hour':
-          filteredData = data.slice(Math.max(data.length - 60, 0));
+        case 'day':
+          filteredData = data.slice(Math.max(data.length - 60*24, 0));
           break;
         case 'month':
-          filteredData = data.slice(Math.max(data.length - 60*30, 0));
+          filteredData = data.slice(Math.max(data.length - 60*24*30, 0));
           break;
         case 'year':
-          filteredData = data.slice(Math.max(data.length - 60*30*12, 0));
+          filteredData = data.slice(Math.max(data.length - 60*24*30*12, 0));
           break;
         default:
           filteredData = data;
@@ -132,7 +132,7 @@ export default function Dashboard() {
 
               <Card shadow="md" padding="lg" mt="mt" withBorder>
                 <Group mb="lg">
-                  <Button onClick={() => setTimePeriod('hour')}  variant={timePeriod === 'hour' ? 'filled' : 'light'}>Stunde</Button>
+                  <Button onClick={() => setTimePeriod('day')}  variant={timePeriod === 'day' ? 'filled' : 'light'}>Tag</Button>
                   <Button onClick={() => setTimePeriod('month')} variant={timePeriod === 'month' ? 'filled' : 'light'}>Monat</Button>
                   <Button onClick={() => setTimePeriod('year')}  variant={timePeriod === 'year' ? 'filled' : 'light'}>Jahr</Button>
                 </Group>
