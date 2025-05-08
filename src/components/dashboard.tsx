@@ -49,7 +49,7 @@ export default function Dashboard() {
 
     const updateDif = async () => {
         try {
-          await axios.post('/dif', { dif });
+          await axios.post(backend + "/temperatures/dif", { dif });
         } catch (err) {
           console.error('Failed to update dif:', err);
         }
