@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "deploy": "pm2 start ./scripts/run.sh --name solar-heat-frontend --restart-delay 20000",
+
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
