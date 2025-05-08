@@ -23,6 +23,7 @@ export default function Dashboard() {
     const [data, setData] = useState<Temperature[]>([]);
     const [dif, setDif] = useState<number>(0);
     const [loading, setLoading] = useState(false);
+    const [timePeriod, setTimePeriod] = useState('hour');
     
     const fetchStatus = async () => {
         try {
@@ -54,7 +55,26 @@ export default function Dashboard() {
         }
     };
 
-    const chartData =  data.map((item, index) => ({
+    const filterDataByTimePeriod = (data: Temperature[]) => {
+      let filteredData;
+  
+      switch (timePeriod) {
+        case 'hour':
+          filteredData = data.slice(Math.max(data.length - 60, 0));
+          break;
+        case 'month':
+          filteredData = data.slice(Math.max(data.length - 60*30, 0));
+          break;
+        case 'year':
+          filteredData = data.slice(Math.max(data.length - 60*30*12, 0));
+          break;
+        default:
+          filteredData = data;
+      }
+      return filteredData;
+    };
+
+    const chartData =  filterDataByTimePeriod(data).map((item, index) => ({
       ...item,
       date: index
     }));
@@ -89,19 +109,28 @@ export default function Dashboard() {
                 </Group>
               </Card>
 
-              <LineChart
-                  h={300}
-                  withDots={false}
-                  data={chartData}
-                  dataKey="date"
-                  series={[
-                    { name: 'solar', color: 'yellow.6' },
-                    { name: 'pump', color: 'blue.6' },
-                    { name: 'security', color: 'red.6' },
-                  ]}
-                  strokeWidth={3}
-                  curveType="linear"
-              />
+
+              <Card shadow="md" padding="lg" mt="mt" withBorder>
+                <Group mb="lg">
+                  <Button onClick={() => setTimePeriod('hour')}  variant={timePeriod === 'hour' ? 'filled' : 'light'}>Last 60 Entries (Hour)</Button>
+                  <Button onClick={() => setTimePeriod('month')} variant={timePeriod === 'month' ? 'filled' : 'light'}>Last Month</Button>
+                  <Button onClick={() => setTimePeriod('year')}  variant={timePeriod === 'year' ? 'filled' : 'light'}>Last Year</Button>
+                </Group>
+
+                <LineChart
+                    h={300}
+                    withDots={false}
+                    data={chartData}
+                    dataKey="date"
+                    series={[
+                      { name: 'solar', color: 'yellow.6' },
+                      { name: 'pump', color: 'blue.6' },
+                      { name: 'security', color: 'red.6' },
+                    ]}
+                    strokeWidth={3}
+                    curveType="linear"
+                />
+              </Card>
 
             </Stack>
             
