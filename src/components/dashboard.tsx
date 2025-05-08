@@ -8,7 +8,7 @@ import { ResponsiveContainer } from "recharts";
 
 type Temperature = {
     pump: number;
-    tank: number;
+    solar: number;
     security: number;
     rel: number;
 };
@@ -94,8 +94,8 @@ export default function Dashboard() {
               <Card shadow="md" padding="lg" mt="mt" withBorder>
                   <Text size="lg">🌡️ Temperatur</Text>
                   <Group mt="sm">
-                    <Text>Pump: {data.at(-1)?.pump ?? 0} °C</Text>
-                    <Text>Tank: {data.at(-1)?.tank ?? 0} °C</Text>
+                    <Text>Solar: {data.at(-1)?.solar ?? 0} °C</Text>
+                    <Text>Tank: {data.at(-1)?.pump ?? 0} °C</Text>
                     <Text>Security: {data.at(-1)?.security ?? 0} °C</Text>
                   </Group>
 
