@@ -15,25 +15,33 @@ type Temperature = {
 
 type Status = {
   dif: number;
+  time: number;
 }
 
 const backend = "https://solar-heat-backend.manuelselch.de";
 
+function parseTime(time: Date) {
+  const hours = time.getHours().toString().padStart(2, '0');
+  const minutes = time.getMinutes().toString().padStart(2, '0');
+  const seconds = time.getSeconds().toString().padStart(2, '0');
+
+  const timestamp = hours + ":" + minutes + ":" + seconds;
+  return timestamp;
+}
+
 export default function Dashboard() {
     const [data, setData] = useState<Temperature[]>([]);
-    const [dif, setDif] = useState<number>(0);
-    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<Status>({dif: 0, time: 0});
     const [timePeriod, setTimePeriod] = useState('hour');
+    const [time, setTime] = useState<string>("00:00");
     
     const fetchStatus = async () => {
         try {
-          setLoading(true);
           const res = await axios.get<Status>(backend + "/temperatures/status");
-          setDif(res.data.dif);
+          setStatus(res.data);
         } catch (err) {
           console.error('Failed to fetch status:', err);
         } finally {
-          setLoading(false);
         }
     };
 
@@ -41,6 +49,7 @@ export default function Dashboard() {
       try {
         const res = await axios.get<Temperature[]>(backend + "/temperatures");
         setData(res.data);
+        setTime(parseTime(new Date()))
       } catch (err) {
         console.error('Failed to fetch temperatures:', err);
       } 
@@ -49,7 +58,7 @@ export default function Dashboard() {
 
     const updateDif = async () => {
         try {
-          await axios.post(backend + "/temperatures/dif", { dif });
+          await axios.post(backend + "/temperatures/dif", { dif: status.dif });
         } catch (err) {
           console.error('Failed to update dif:', err);
         }
@@ -82,12 +91,20 @@ export default function Dashboard() {
     useEffect(() => {
       fetchStatus();
       fetchTemperatures();
+
+      const interval = setInterval(() => {
+        fetchStatus();
+        fetchTemperatures();
+      }, 10000);
+
+      return () => clearInterval(interval);
     }, []);
+
+    const now = Date.now();
     
 
     return (
         <Container>
-            <LoadingOverlay visible={loading}/>
             <Title order={2}>Heinzungsteuerung Dashboard</Title>
 
             <Stack gap={100}>
@@ -100,21 +117,24 @@ export default function Dashboard() {
                   </Group>
 
                   <Text size="lg" mt="md">⚙️ Status</Text>
-                  <Switch checked={data.at(-1)?.rel==1} label={data.at(-1)?.rel==1 ? 'Pump is ON' : 'Pump is OFF'} readOnly />
-                
+                  <Switch checked={data.at(-1)?.rel==1} label={data.at(-1)?.rel==1 ? 'Pumpe ist AN' : 'Pumpe ist AUS'} readOnly />
+                  <Text pt={5}>Letzer Eintrag: {parseTime(new Date(status.time))}</Text>
+
                   <Text size="lg" mt="md">🔧 Differenz</Text>
                   <Group>
-                    <NumberInput value={dif} onChange={(val) => setDif(Number(val) ?? 0)} min={0} max={20} />
+                    <NumberInput value={status.dif} onChange={(val) => setStatus({time: status.time, dif: Number(val)})} min={0} max={20} />
                     <Button onClick={updateDif}>Save</Button>
                 </Group>
+
+                <Text size="lg" mt="md">Aktualisiert: {time}</Text>
               </Card>
 
 
               <Card shadow="md" padding="lg" mt="mt" withBorder>
                 <Group mb="lg">
-                  <Button onClick={() => setTimePeriod('hour')}  variant={timePeriod === 'hour' ? 'filled' : 'light'}>Last 60 Entries (Hour)</Button>
-                  <Button onClick={() => setTimePeriod('month')} variant={timePeriod === 'month' ? 'filled' : 'light'}>Last Month</Button>
-                  <Button onClick={() => setTimePeriod('year')}  variant={timePeriod === 'year' ? 'filled' : 'light'}>Last Year</Button>
+                  <Button onClick={() => setTimePeriod('hour')}  variant={timePeriod === 'hour' ? 'filled' : 'light'}>Stunde</Button>
+                  <Button onClick={() => setTimePeriod('month')} variant={timePeriod === 'month' ? 'filled' : 'light'}>Monat</Button>
+                  <Button onClick={() => setTimePeriod('year')}  variant={timePeriod === 'year' ? 'filled' : 'light'}>Jahr</Button>
                 </Group>
 
                 <LineChart
