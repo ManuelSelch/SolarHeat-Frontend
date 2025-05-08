@@ -107,7 +107,7 @@ export default function Dashboard() {
         <Container>
             <Title order={2}>Heinzungsteuerung Dashboard</Title>
 
-            <Stack gap={100}>
+            <Stack gap={10}>
               <Card shadow="md" padding="lg" mt="mt" withBorder>
                   <Text size="lg">🌡️ Temperatur</Text>
                   <Group mt="sm">
