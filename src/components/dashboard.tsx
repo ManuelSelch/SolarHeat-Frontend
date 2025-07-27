@@ -1,25 +1,14 @@
 'use client';
 
-import { Button, Card, Container, Group, LoadingOverlay, NumberInput, Stack, Switch, Text, Title } from "@mantine/core";
+import { ActionIcon, Button, Card, Container, Group, NumberInput, Stack, Switch, Text, Title } from "@mantine/core";
 import { useEffect, useState } from "react";
 import axios from 'axios';
 import { LineChart } from '@mantine/charts';
-import { ResponsiveContainer } from "recharts";
-
-type Temperature = {
-    pump: number;
-    solar: number;
-    security: number;
-    rel: number;
-};
-
-type Status = {
-  dif: number;
-  time: number;
-}
+import { IconRefresh } from '@tabler/icons-react';
 
 const backend = "https://solar-heat.manuelselch.de";
 
+//#region parseTime
 function parseTime(time: Date) {
   const hours = time.getHours().toString().padStart(2, '0');
   const minutes = time.getMinutes().toString().padStart(2, '0');
@@ -28,13 +17,17 @@ function parseTime(time: Date) {
   const timestamp = hours + ":" + minutes + ":" + seconds;
   return timestamp;
 }
+//#endregion
 
 export default function Dashboard() {
+    //#region state
     const [data, setData] = useState<Temperature[]>([]);
     const [status, setStatus] = useState<Status>({dif: 0, time: 0});
     const [timePeriod, setTimePeriod] = useState('day');
     const [time, setTime] = useState<string>("00:00");
+    //#endregion
     
+    //#region fetch, update & filter methods 
     const fetchStatus = async () => {
         try {
           const res = await axios.get<Status>(backend + "/temperatures/status");
@@ -53,7 +46,7 @@ export default function Dashboard() {
       } catch (err) {
         console.error('Failed to fetch temperatures:', err);
       } 
-  };
+    };
 
 
     const updateDif = async () => {
@@ -82,6 +75,7 @@ export default function Dashboard() {
       }
       return filteredData;
     };
+    //#endregion
 
     const chartData =  filterDataByTimePeriod(data).map((item, index) => ({
       ...item,
@@ -127,6 +121,15 @@ export default function Dashboard() {
                 </Group>
 
                 <Text size="lg" mt="md">Aktualisiert: {time}</Text>
+                
+                <ActionIcon
+                  size="md" // or 'sm', 'lg', or exact like size={30}
+                  variant="default"
+                  onClick={() => window.location.reload()}
+                  aria-label="Reload"
+                >
+                  <IconRefresh size={18} />
+                </ActionIcon>
               </Card>
 
 
