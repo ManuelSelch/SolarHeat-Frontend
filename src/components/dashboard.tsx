@@ -203,7 +203,6 @@ export default function Dashboard() {
               />
             </>}
           <div className={styles.legend} aria-label="Temperaturreihen">{readings.map((reading) => <span key={reading.name}><i className={styles[reading.color]} />{reading.name}</span>)}</div>
-          <footer className={styles.chartFooter}><span>{currentPeriod ? 'Aktueller Zeitraum' : 'Historische Ansicht · Live-Werte oben bleiben aktuell'}</span><span>°C</span></footer>
         </section>
       </div>
     </main>
