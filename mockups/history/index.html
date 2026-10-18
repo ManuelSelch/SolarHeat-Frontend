@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SolarHeat · Verlauf Mockup</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main>
+    <header class="page-header">
+      <div><div class="brand">☀ SolarHeat</div><h1>Heizungssteuerung</h1></div>
+      <span class="prototype">Mockup · Beispieldaten</span>
+    </header>
+
+    <section class="live-card" aria-labelledby="live-title">
+      <div class="live-header"><h2 id="live-title">Aktuelle Temperaturen</h2><span class="live-badge"><span></span> Live</span></div>
+      <div class="readings">
+        <div><span class="sensor"><i class="solar"></i>Solar</span><strong>28 <small>°C</small></strong></div>
+        <div><span class="sensor"><i class="tank"></i>Tank</span><strong>60 <small>°C</small></strong></div>
+        <div><span class="sensor"><i class="security"></i>Security</span><strong>70 <small>°C</small></strong></div>
+      </div>
+      <p class="live-note">Pumpe ist AUS <span>·</span> Live-Werte bleiben unabhängig vom ausgewählten Zeitraum.</p>
+    </section>
+
+    <section class="chart-card" aria-labelledby="chart-title">
+      <div class="chart-header">
+        <h2 id="chart-title">Temperaturverlauf</h2>
+        <div class="tabs" role="group" aria-label="Zeitraum">
+          <button data-range="day" aria-pressed="true">Tag</button>
+          <button data-range="month" aria-pressed="false">Monat</button>
+          <button data-range="year" aria-pressed="false">Jahr</button>
+        </div>
+      </div>
+      <div class="navigation">
+        <div class="date-controls">
+          <button class="arrow" id="previous" aria-label="Vorheriger Tag">‹</button>
+          <label class="date-field"><span class="sr-only">Zeitraum auswählen</span><input id="date" type="date" /></label>
+          <button class="arrow" id="next" aria-label="Nächster Tag">›</button>
+        </div>
+        <button class="today-button" id="today">Heute</button>
+      </div>
+      <div class="period-heading">
+        <h3 id="period-title" aria-live="polite"></h3>
+        <span id="history-badge" class="history-badge">Vergangener Zeitraum</span>
+      </div>
+      <p id="resolution" class="resolution"></p>
+      <div class="chart" id="chart"></div>
+      <div class="legend"><span><i class="solar"></i>Solar</span><span><i class="tank"></i>Tank</span><span><i class="security"></i>Security</span></div>
+      <footer class="chart-footer"><span id="period-note"></span><span>°C</span></footer>
+    </section>
+    <p class="mockup-note">Interaktiver Entwurf: Zeitraum wechseln, zurückblättern oder ein Datum auswählen. Keine echten Messdaten.</p>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
