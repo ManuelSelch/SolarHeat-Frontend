@@ -20,7 +20,10 @@
         <div><span class="sensor"><i class="tank"></i>Tank</span><strong>60 <small>°C</small></strong></div>
         <div><span class="sensor"><i class="security"></i>Security</span><strong>70 <small>°C</small></strong></div>
       </div>
-      <p class="live-note">Pumpe ist AUS</p>
+      <div class="machine-status">
+        <p class="live-note">Pumpe ist AUS</p>
+        <p class="update-note">Letzter Eintrag: <time id="last-entry" title="Letzter von der Maschine gesendeter und gespeicherter Messwert"></time></p>
+      </div>
       <form class="difference-form" id="difference-form">
         <label for="difference">Differenz <span class="setting-unit">(°C)</span></label>
         <div class="difference-controls">

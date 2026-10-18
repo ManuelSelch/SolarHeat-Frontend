@@ -62,6 +62,13 @@ function showLastUpdate(date) {
   $('last-update').textContent = date.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
 }
 showLastUpdate(new Date(Date.now() - 60000));
+// Machine/database timestamp is independent of fetching the frontend again.
+const lastEntry = new Date(Date.now() - 90000);
+$('last-entry').dateTime = lastEntry.toISOString();
+$('last-entry').textContent = lastEntry.toLocaleString('de-DE', {
+  day:'2-digit', month:'2-digit', year:'numeric',
+  hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false,
+});
 
 $('refresh').addEventListener('click', () => {
   $('refresh').disabled = true;
