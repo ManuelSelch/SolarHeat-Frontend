@@ -21,6 +21,19 @@ i { display:inline-block; height:8px; width:8px; border-radius:50%; }
 strong { display:block; font-size:31px; font-weight:600; margin-top:7px; letter-spacing:-1px; }
 small { font-size:16px; font-weight:400; color:#93a0af; }
 .live-note { font-size:12px; color:var(--muted); margin:20px 0 0; }.live-note span { padding:0 6px; }
+.live-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border-top:1px solid var(--border); margin-top:18px; padding-top:14px; }
+.update-note { margin:0; color:var(--muted); font-size:12px; }
+.update-note time { color:#556377; font-variant-numeric:tabular-nums; }
+.refresh-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; color:var(--blue); }
+.difference-form { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:20px; padding-top:18px; border-top:1px solid var(--border); }
+.difference-form label { font-size:13px; font-weight:550; }
+.setting-unit { color:var(--muted); font-weight:400; }
+.difference-controls { display:flex; gap:8px; }
+.difference-controls input { width:76px; height:36px; border:1px solid var(--border); border-radius:6px; padding:0 10px; color:var(--ink); background:white; font-size:13px; }
+.save-button { background:var(--blue); border-color:var(--blue); color:white; }
+.save-button:hover { background:#1c7ed6; }
+.save-status { color:var(--muted); font-size:11px; }
+.save-status[data-saved=true] { color:#22825d; }
 .tabs { display:flex; padding:3px; gap:3px; background:#f1f3f5; border-radius:7px; }
 button,input { font:inherit; }
 button { cursor:pointer; border:1px solid var(--border); background:white; color:var(--ink); border-radius:6px; font-size:13px; font-weight:550; min-height:36px; padding:0 13px; }

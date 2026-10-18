@@ -57,6 +57,36 @@ function render() {
   renderChart();
 }
 
+function showLastUpdate(date) {
+  $('last-update').dateTime = date.toISOString();
+  $('last-update').textContent = date.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+}
+showLastUpdate(new Date(Date.now() - 60000));
+
+$('refresh').addEventListener('click', () => {
+  $('refresh').disabled = true;
+  $('refresh-label').textContent = 'Wird aktualisiert…';
+  document.querySelector('.live-card').setAttribute('aria-busy', 'true');
+  // Simulated request only: do not reload the page or change the history selection.
+  setTimeout(() => {
+    showLastUpdate(new Date());
+    $('refresh').disabled = false;
+    $('refresh-label').textContent = 'Aktualisieren';
+    document.querySelector('.live-card').setAttribute('aria-busy', 'false');
+  }, 650);
+});
+
+$('difference-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!$('difference-form').reportValidity()) return;
+  $('difference-status').textContent = `${$('difference').value} °C gespeichert (Demo)`;
+  $('difference-status').dataset.saved = 'true';
+});
+$('difference').addEventListener('input', () => {
+  $('difference-status').textContent = 'Nicht gespeicherte Änderung';
+  $('difference-status').dataset.saved = 'false';
+});
+
 $('previous').addEventListener('click', () => shift(-1));
 $('next').addEventListener('click', () => shift(1));
 $('today').addEventListener('click', () => { selected = new Date(today); render(); });

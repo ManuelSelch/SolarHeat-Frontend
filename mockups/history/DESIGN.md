@@ -1,6 +1,6 @@
 # History navigation mockup
 
-- Revision: 1
+- Revision: 2
 - Review status: in review
 - Approval: not yet approved; production implementation is not authorized.
 
@@ -9,7 +9,10 @@ Explore selecting historical days, months, and years in the existing SolarHeat t
 
 ## Layout and interaction
 - Preserve the light cards, blue controls, and yellow/blue/red temperature series.
-- Keep a separate current-temperature card above the history chart.
+- Keep a separate current-temperature card above the history chart, including pump status.
+- Show “Zuletzt aktualisiert” with local HH:mm:ss and an Aktualisieren button in the card footer.
+- Refresh simulates a short pending state, disables the button temporarily, and updates the timestamp without resetting history navigation or the difference input.
+- Include a labeled Differenz (°C) number field (0–20, whole degrees, matching the current app) and Speichern button. Unsaved changes and simulated save confirmation are shown inline.
 - Tag / Monat / Jahr controls the granularity; previous and next move one selected period.
 - A native date/month picker (numeric year input for Jahr) selects a period directly.
 - Heute / Dieser Monat / Dieses Jahr returns to the current period. Future navigation is disabled.
@@ -20,10 +23,11 @@ Explore selecting historical days, months, and years in the existing SolarHeat t
 
 ## Simulated and omitted behavior
 - All readings and curves are deterministic examples, not real API data. No requests to the backend.
-- Live values are illustrative and do not actually refresh.
+- Live values are illustrative; refresh only updates the demo timestamp. No real data is fetched.
+- Saving the difference only shows a demo confirmation. It changes no backend setting and is not persisted.
 - Native picker presentation depends on browser and operating system.
 - Current-period examples show a full curve rather than truncating at the current time.
-- Loading, errors, empty history, retention limits, settings and pump controls are omitted from this small design exploration.
+- Refresh has a simulated loading state. API errors, empty history, retention limits and additional settings are omitted from this small design exploration.
 - Production needs an optional backend reference date plus an agreed timezone for day boundaries.
 
 ## Open review question
