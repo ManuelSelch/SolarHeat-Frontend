@@ -16,6 +16,12 @@ export type TemperatureChartPoint = {
   security: number;
 };
 
+export function formatChartLabel(date: string, range: TemperatureRange): string {
+  if (range !== 'day') return date;
+  const time = new Date(date);
+  return `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+}
+
 // The API returns raw readings for a day, daily averages for a month,
 // and monthly averages for a year. SQL averages arrive as decimal strings.
 export function normalizeChartData(data: TemperatureHistory[]): TemperatureChartPoint[] {

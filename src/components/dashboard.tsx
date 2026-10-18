@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { LineChart } from '@mantine/charts';
 import { IconRefresh } from '@tabler/icons-react';
-import { normalizeChartData, type TemperatureChartPoint, type TemperatureHistory, type TemperatureRange } from './temperature-data';
+import { formatChartLabel, normalizeChartData, type TemperatureChartPoint, type TemperatureHistory, type TemperatureRange } from './temperature-data';
 
 const backend = "https://solar-heat.manuelselch.de";
 
@@ -154,8 +154,8 @@ export default function Dashboard() {
                 <LineChart
                     h={300}
                     withDots={chartData.length === 1}
-                    data={chartData}
-                    dataKey="date"
+                    data={chartData.map((item) => ({ ...item, label: formatChartLabel(item.date, timePeriod) }))}
+                    dataKey="label"
                     series={[
                       { name: 'solar', color: 'yellow.6' },
                       { name: 'pump', color: 'blue.6' },
