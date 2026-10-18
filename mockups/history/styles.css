@@ -21,8 +21,7 @@ i { display:inline-block; height:8px; width:8px; border-radius:50%; }
 strong { display:block; font-size:31px; font-weight:600; margin-top:7px; letter-spacing:-1px; }
 small { font-size:16px; font-weight:400; color:#93a0af; }
 .live-note { font-size:12px; color:var(--muted); margin:20px 0 0; }.live-note span { padding:0 6px; }
-.machine-status { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:20px; }
-.machine-status .live-note { margin:0; }
+.timestamps { display:flex; align-items:center; flex-wrap:wrap; gap:8px 20px; flex:1; }
 .live-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border-top:1px solid var(--border); margin-top:18px; padding-top:14px; }
 .update-note { margin:0; color:var(--muted); font-size:12px; }
 .update-note time { color:#556377; font-variant-numeric:tabular-nums; }

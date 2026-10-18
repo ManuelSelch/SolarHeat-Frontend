@@ -20,10 +20,7 @@
         <div><span class="sensor"><i class="tank"></i>Tank</span><strong>60 <small>°C</small></strong></div>
         <div><span class="sensor"><i class="security"></i>Security</span><strong>70 <small>°C</small></strong></div>
       </div>
-      <div class="machine-status">
-        <p class="live-note">Pumpe ist AUS</p>
-        <p class="update-note">Letzter Eintrag: <time id="last-entry" title="Letzter von der Maschine gesendeter und gespeicherter Messwert"></time></p>
-      </div>
+      <p class="live-note">Pumpe ist AUS</p>
       <form class="difference-form" id="difference-form">
         <label for="difference">Differenz <span class="setting-unit">(°C)</span></label>
         <div class="difference-controls">
@@ -33,7 +30,10 @@
         <span id="difference-status" class="save-status" role="status"></span>
       </form>
       <div class="live-footer">
-        <p class="update-note" role="status">Zuletzt aktualisiert: <time id="last-update"></time></p>
+        <div class="timestamps">
+          <p class="update-note" role="status">Zuletzt aktualisiert: <time id="last-update"></time></p>
+          <p class="update-note">Letzter Eintrag: <time id="last-entry" title="Letzter von der Maschine gesendeter und gespeicherter Messwert"></time></p>
+        </div>
         <button class="refresh-button" id="refresh" type="button" aria-label="Aktualisieren" title="Aktualisieren">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17"/></svg>
         </button>
