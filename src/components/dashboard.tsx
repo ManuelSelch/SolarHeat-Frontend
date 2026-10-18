@@ -2,7 +2,6 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { ChartTooltip, LineChart } from '@mantine/charts';
-import { useMediaQuery } from '@mantine/hooks';
 import { IconChevronLeft, IconChevronRight, IconRefresh } from '@tabler/icons-react';
 import { getHistory } from './temperature-api';
 import {
@@ -46,7 +45,6 @@ function PeriodPicker({ date, range, today, onChange }: {
 }
 
 export default function Dashboard() {
-  const compactChart = useMediaQuery('(max-width: 600px)');
   const { live, lastUpdated, refreshing, liveError, refresh, saving, saveError, save } = useLiveTemperatures();
   const [range, setRange] = useState<TemperatureRange>('day');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -191,7 +189,7 @@ export default function Dashboard() {
                 dataKey="label" unit=" °C" strokeWidth={2.5} curveType="linear"
                 xAxisProps={range === 'day' ? {
                   type: 'number', domain: [0, 1440], allowDataOverflow: true,
-                  ticks: dayAxisTicks(compactChart ? 4 : 1), interval: 0,
+                  ticks: dayAxisTicks(4), interval: 0,
                   tickFormatter: formatDayAxisTick, tick: { fontSize: 10 },
                 } : undefined}
                 tooltipProps={range === 'day' ? {
