@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { LineChart } from '@mantine/charts';
 import { IconRefresh } from '@tabler/icons-react';
+import { filterDataByTimePeriod } from './temperature-data';
 
 const backend = "https://solar-heat.manuelselch.de";
 
@@ -57,27 +58,9 @@ export default function Dashboard() {
         }
     };
 
-    const filterDataByTimePeriod = (data: Temperature[]) => {
-      let filteredData;
-  
-      switch (timePeriod) {
-        case 'day':
-          filteredData = data.slice(Math.max(data.length - 60*24, 0));
-          break;
-        case 'month':
-          filteredData = data.slice(Math.max(data.length - 60*24*30, 0));
-          break;
-        case 'year':
-          filteredData = data.slice(Math.max(data.length - 60*24*30*12, 0));
-          break;
-        default:
-          filteredData = data;
-      }
-      return filteredData;
-    };
     //#endregion
 
-    const chartData =  filterDataByTimePeriod(data).map((item, index) => ({
+    const chartData =  filterDataByTimePeriod(data, timePeriod).map((item, index) => ({
       ...item,
       date: index
     }));

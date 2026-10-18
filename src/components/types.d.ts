@@ -3,6 +3,7 @@ declare type Temperature = {
     solar: number;
     security: number;
     rel: number;
+    timestamp: string;
 };
 
 declare type Status = {
