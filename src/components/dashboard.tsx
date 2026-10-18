@@ -175,7 +175,6 @@ export default function Dashboard() {
           </div>
           <div className={styles.periodHeading}>
             <h3 aria-live="polite">{periodTitle}</h3>
-            {selectedDate && !currentPeriod && <span className={styles.historyBadge}>Vergangener Zeitraum</span>}
           </div>
 
           {history.loading ? <div className={styles.chartState} role="status">Temperaturen werden geladen…</div>
