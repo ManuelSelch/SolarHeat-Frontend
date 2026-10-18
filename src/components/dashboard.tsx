@@ -12,10 +12,10 @@ import {
 import { useLiveTemperatures } from './use-live-temperatures';
 import styles from './dashboard.module.css';
 
-const ranges: { value: TemperatureRange; label: string; resolution: string }[] = [
-  { value: 'day', label: 'Tag', resolution: '' },
-  { value: 'month', label: 'Monat', resolution: 'Durchschnittstemperatur pro Tag' },
-  { value: 'year', label: 'Jahr', resolution: 'Durchschnittstemperatur pro Monat' },
+const ranges: { value: TemperatureRange; label: string }[] = [
+  { value: 'day', label: 'Tag' },
+  { value: 'month', label: 'Monat' },
+  { value: 'year', label: 'Jahr' },
 ];
 
 function timeLabel(date: Date): string {
@@ -177,7 +177,6 @@ export default function Dashboard() {
             <h3 aria-live="polite">{periodTitle}</h3>
             {selectedDate && !currentPeriod && <span className={styles.historyBadge}>Vergangener Zeitraum</span>}
           </div>
-          {selectedRange.resolution && <p className={styles.resolution}>{selectedRange.resolution}</p>}
 
           {history.loading ? <div className={styles.chartState} role="status">Temperaturen werden geladen…</div>
             : history.error && !history.data.length ? <div className={`${styles.chartState} ${styles.error}`} role="alert">{history.error}</div>
