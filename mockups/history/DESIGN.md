@@ -1,9 +1,9 @@
 # History navigation mockup
 
 - Revision: 5
-- Review status: in review
+- Review status: approved
 - Prior approval: user approved revision 3 with “looks good. Now implement the frontend”, then paused implementation to add the last machine/database entry timestamp.
-- Approval: revision 5 awaits confirmation; production implementation remains paused.
+- Approval: revision 5 explicitly approved by the user: “looks good. now implement it”. Implement the frontend only; send the new optional date=YYYY-MM-DD argument while leaving the backend unchanged.
 
 ## Goal and scope
 Explore selecting historical days, months, and years in the existing SolarHeat temperature chart without changing production code or the backend.
@@ -32,5 +32,7 @@ Explore selecting historical days, months, and years in the existing SolarHeat t
 - Refresh has a simulated loading state. API errors, empty history, retention limits and additional settings are omitted from this small design exploration.
 - Production needs an optional backend reference date plus an agreed timezone for day boundaries.
 
-## Open review question
-Does this compact period navigation provide enough control, or should selecting a date use a larger calendar popover?
+## Implementation notes
+- During implementation, the user explicitly requested removing the top SolarHeat icon and text. Production keeps only the Heizungssteuerung heading; the approved mockup source is preserved as the reference.
+- Production opens on today, rather than the demo's yesterday selection, and uses real loading/error/empty states and a compatibility message when the old backend ignores date.
+- Frontend date values and labels use the browser's local calendar/timezone; the backend date-argument implementation remains a follow-up.

@@ -1,173 +1,200 @@
 'use client';
 
-import { ActionIcon, Button, Card, Container, Group, NumberInput, Stack, Switch, Text, Title } from "@mantine/core";
-import { useEffect, useState } from "react";
-import axios from 'axios';
+import { useEffect, useState, type FormEvent } from 'react';
 import { LineChart } from '@mantine/charts';
-import { IconRefresh } from '@tabler/icons-react';
-import { formatChartLabel, normalizeChartData, type TemperatureChartPoint, type TemperatureHistory, type TemperatureRange } from './temperature-data';
+import { IconChevronLeft, IconChevronRight, IconRefresh } from '@tabler/icons-react';
+import { getHistory } from './temperature-api';
+import {
+  chartPointsForPeriod, dateInputValue, formatChartLabel, formatPeriodTitle,
+  normalizeChartData, parsePeriodInput, periodKey, shiftPeriod,
+  type TemperatureChartPoint, type TemperatureRange,
+} from './temperature-data';
+import { useLiveTemperatures } from './use-live-temperatures';
+import styles from './dashboard.module.css';
 
-const backend = "https://solar-heat.manuelselch.de";
+const ranges: { value: TemperatureRange; label: string; resolution: string }[] = [
+  { value: 'day', label: 'Tag', resolution: 'Einzelne Messwerte im Tagesverlauf' },
+  { value: 'month', label: 'Monat', resolution: 'Durchschnittstemperatur pro Tag' },
+  { value: 'year', label: 'Jahr', resolution: 'Durchschnittstemperatur pro Monat' },
+];
 
-//#region parseTime
-function parseTime(time: Date) {
-  const hours = time.getHours().toString().padStart(2, '0');
-  const minutes = time.getMinutes().toString().padStart(2, '0');
-  const seconds = time.getSeconds().toString().padStart(2, '0');
-
-  const timestamp = hours + ":" + minutes + ":" + seconds;
-  return timestamp;
+function timeLabel(date: Date): string {
+  return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 }
-//#endregion
+
+function PeriodPicker({ date, range, today, onChange }: {
+  date: string; range: TemperatureRange; today: string; onChange: (date: string) => void;
+}) {
+  const [value, setValue] = useState(periodKey(date, range));
+  return (
+    <input
+      className={styles.dateInput}
+      type={range === 'day' ? 'date' : range === 'month' ? 'month' : 'number'}
+      aria-label={`${ranges.find((item) => item.value === range)?.label} auswählen`}
+      min={range === 'year' ? '1000' : range === 'month' ? '1000-01' : '1000-01-01'}
+      max={periodKey(today, range)}
+      value={value}
+      onChange={(event) => {
+        setValue(event.target.value);
+        const parsed = parsePeriodInput(event.target.value, range, today);
+        if (parsed) onChange(parsed);
+      }}
+      onBlur={() => setValue(periodKey(date, range))}
+    />
+  );
+}
 
 export default function Dashboard() {
-    //#region state
-    const [data, setData] = useState<Temperature[]>([]);
-    const [status, setStatus] = useState<Status>({dif: 0, time: 0});
-    const [timePeriod, setTimePeriod] = useState<TemperatureRange>('day');
-    const [chartData, setChartData] = useState<TemperatureChartPoint[]>([]);
-    const [chartMessage, setChartMessage] = useState<string | null>(null);
-    const [time, setTime] = useState<string>("00:00");
-    //#endregion
-    
-    //#region fetch, update & filter methods 
-    const fetchStatus = async () => {
-        try {
-          const res = await axios.get<Status>(backend + "/temperatures/status");
-          setStatus(res.data);
-        } catch (err) {
-          console.error('Failed to fetch status:', err);
-        } finally {
-        }
-    };
+  const { live, lastUpdated, refreshing, liveError, refresh, saving, saveError, save } = useLiveTemperatures();
+  const [range, setRange] = useState<TemperatureRange>('day');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [history, setHistory] = useState<{ data: TemperatureChartPoint[]; loading: boolean; error: string | null }>({ data: [], loading: true, error: null });
+  // Keep the editable draft separate from the polled server value.
+  const [differenceDraft, setDifferenceDraft] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-    const fetchTemperatures = async () => {
+  useEffect(() => { setSelectedDate(dateInputValue(new Date())); }, []);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    let controller: AbortController | null = null;
+    setHistory({ data: [], loading: true, error: null });
+    const fetchHistory = async () => {
+      controller?.abort();
+      const request = new AbortController();
+      controller = request;
       try {
-        const res = await axios.get<Temperature[]>(backend + "/temperatures");
-        setData(res.data);
-        setTime(parseTime(new Date()))
-      } catch (err) {
-        console.error('Failed to fetch temperatures:', err);
-      } 
-    };
-
-
-    const updateDif = async () => {
-        try {
-          await axios.post(backend + "/temperatures/dif", { dif: status.dif });
-        } catch (err) {
-          console.error('Failed to update dif:', err);
+        const response = normalizeChartData(await getHistory(range, selectedDate, request.signal));
+        if (request.signal.aborted) return;
+        const points = chartPointsForPeriod(response, range, selectedDate);
+        const mismatch = response.length > 0 && points.length === 0;
+        setHistory({
+          data: points, loading: false,
+          error: mismatch ? 'Die Serverantwort passt nicht zum gewählten Zeitraum. Das Backend muss historische Datumsabfragen noch unterstützen.' : null,
+        });
+      } catch {
+        if (!request.signal.aborted) {
+          setHistory((current) => ({ ...current, loading: false, error: 'Temperaturen konnten nicht geladen werden.' }));
         }
+      }
     };
+    fetchHistory();
+    const interval = setInterval(fetchHistory, 10000);
+    return () => { controller?.abort(); clearInterval(interval); };
+  }, [range, selectedDate]);
 
-    //#endregion
+  const today = dateInputValue(new Date());
+  const currentPeriod = !!selectedDate && periodKey(selectedDate, range) === periodKey(today, range);
+  const selectedRange = ranges.find((item) => item.value === range)!;
+  const periodTitle = selectedDate ? formatPeriodTitle(selectedDate, range) : '…';
+  const difference = differenceDraft ?? (live ? String(live.status.dif) : '');
+  const validDifference = difference.trim() !== '' && Number.isInteger(Number(difference)) && Number(difference) >= 0 && Number(difference) <= 20;
+  const temperature = live?.temperature;
+  const lastEntry = live?.status.time ? new Date(live.status.time) : temperature ? new Date(temperature.timestamp) : null;
+  const readings = [
+    { name: 'Solar', value: temperature?.solar, color: 'solar' },
+    { name: 'Tank', value: temperature?.pump, color: 'tank' },
+    { name: 'Security', value: temperature?.security, color: 'security' },
+  ];
 
-    useEffect(() => {
-      const controller = new AbortController();
-      setChartData([]);
-      setChartMessage('Temperaturen werden geladen…');
+  const submitDifference = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!validDifference) return;
+    setSaveMessage(null);
+    if (await save(Number(difference))) {
+      setDifferenceDraft(null);
+      setSaveMessage('Gespeichert');
+    }
+  };
 
-      const fetchChartTemperatures = async () => {
-        try {
-          const res = await axios.get<TemperatureHistory[]>(backend + '/temperatures', {
-            params: { range: timePeriod },
-            signal: controller.signal,
-          });
-          if (controller.signal.aborted) return;
-          const points = normalizeChartData(res.data);
-          setChartData(points);
-          setChartMessage(points.length ? null : 'Keine Temperaturen für diesen Zeitraum.');
-        } catch (err) {
-          if (controller.signal.aborted) return;
-          console.error('Failed to fetch chart temperatures:', err);
-          setChartMessage('Temperaturen konnten nicht geladen werden.');
-        }
-      };
+  return (
+    <main className={styles.page}>
+      <div className={styles.container}>
+        <header className={styles.pageHeader}>
+          <h1>Heizungssteuerung</h1>
+        </header>
 
-      fetchChartTemperatures();
-      const interval = setInterval(fetchChartTemperatures, 10000);
-      return () => {
-        controller.abort();
-        clearInterval(interval);
-      };
-    }, [timePeriod]);
+        <section className={styles.card} aria-labelledby="live-title">
+          <div className={styles.cardHeader}>
+            <h2 id="live-title">Aktuelle Temperaturen</h2>
+            <span className={`${styles.liveBadge} ${liveError ? styles.offline : ''}`}><span />{liveError ? 'Verbindung gestört' : live ? 'Live' : 'Lädt…'}</span>
+          </div>
+          <div className={styles.readings}>
+            {readings.map((reading) => (
+              <div key={reading.name}>
+                <span className={styles.sensor}><i className={styles[reading.color]} />{reading.name}</span>
+                <strong>{reading.value ?? '—'} <small>°C</small></strong>
+              </div>
+            ))}
+          </div>
+          <p className={styles.pumpStatus}>{temperature ? `Pumpe ist ${temperature.rel === 1 ? 'AN' : 'AUS'}` : 'Pumpenstatus nicht verfügbar'}</p>
+          {liveError && <p className={styles.error} role="alert">{liveError} Bereits angezeigte Werte können veraltet sein.</p>}
+          {!temperature && live && <p className={styles.note}>Heute sind noch keine Messwerte vorhanden.</p>}
 
-    useEffect(() => {
-      fetchStatus();
-      fetchTemperatures();
+          <form className={styles.differenceForm} onSubmit={submitDifference}>
+            <label htmlFor="difference">Differenz <span>(°C)</span></label>
+            <div className={styles.differenceControls}>
+              <input
+                id="difference" type="number" min={0} max={20} step={1} required
+                value={difference} disabled={!live || saving} aria-describedby="difference-status"
+                onChange={(event) => { setDifferenceDraft(event.target.value); setSaveMessage(null); }}
+              />
+              <button className={styles.saveButton} type="submit" disabled={!live || saving || !validDifference}>{saving ? 'Speichert…' : 'Speichern'}</button>
+            </div>
+            <span id="difference-status" className={saveError ? styles.error : saveMessage ? styles.saved : styles.note} role="status">
+              {saveError ?? saveMessage ?? (differenceDraft !== null ? 'Nicht gespeicherte Änderung' : '')}
+            </span>
+          </form>
 
-      const interval = setInterval(() => {
-        fetchStatus();
-        fetchTemperatures();
-      }, 10000);
+          <div className={styles.liveFooter}>
+            <div className={styles.timestamps}>
+              <p>Zuletzt aktualisiert: {lastUpdated ? <time dateTime={lastUpdated.toISOString()}>{timeLabel(lastUpdated)}</time> : '—'}</p>
+              <p>Letzter Eintrag: {lastEntry ? <time dateTime={lastEntry.toISOString()} title="Letzter von der Maschine gesendeter und gespeicherter Messwert">{lastEntry.toLocaleDateString('de-DE')} {timeLabel(lastEntry)}</time> : '—'}</p>
+            </div>
+            <button
+              className={styles.refreshButton} type="button" onClick={refresh} disabled={refreshing || saving}
+              aria-label={refreshing ? 'Wird aktualisiert…' : 'Aktualisieren'} title="Aktualisieren" aria-busy={refreshing}
+            ><IconRefresh size={16} aria-hidden /></button>
+          </div>
+        </section>
 
-      return () => clearInterval(interval);
-    }, []);
+        <section className={`${styles.card} ${styles.historyCard}`} aria-labelledby="chart-title">
+          <div className={styles.chartHeader}>
+            <h2 id="chart-title">Temperaturverlauf</h2>
+            <div className={styles.tabs} role="group" aria-label="Zeitraum">
+              {ranges.map((item) => <button key={item.value} type="button" aria-pressed={range === item.value} onClick={() => setRange(item.value)}>{item.label}</button>)}
+            </div>
+          </div>
+          <div className={styles.navigation}>
+            <div className={styles.dateControls}>
+              <button className={styles.arrow} type="button" aria-label={range === 'year' ? 'Vorheriges Jahr' : `Vorheriger ${selectedRange.label}`} disabled={!selectedDate || periodKey(selectedDate, range) <= periodKey('1000-01-01', range)} onClick={() => selectedDate && setSelectedDate(shiftPeriod(selectedDate, range, -1))}><IconChevronLeft size={18} aria-hidden /></button>
+              {selectedDate && <PeriodPicker key={`${range}:${selectedDate}`} date={selectedDate} range={range} today={today} onChange={setSelectedDate} />}
+              <button className={styles.arrow} type="button" aria-label={range === 'year' ? 'Nächstes Jahr' : `Nächster ${selectedRange.label}`} disabled={!selectedDate || currentPeriod} onClick={() => selectedDate && setSelectedDate(shiftPeriod(selectedDate, range, 1))}><IconChevronRight size={18} aria-hidden /></button>
+            </div>
+            <button className={styles.todayButton} type="button" disabled={currentPeriod || !selectedDate} onClick={() => setSelectedDate(today)}>{range === 'day' ? 'Heute' : range === 'month' ? 'Dieser Monat' : 'Dieses Jahr'}</button>
+          </div>
+          <div className={styles.periodHeading}>
+            <h3 aria-live="polite">{periodTitle}</h3>
+            {selectedDate && !currentPeriod && <span className={styles.historyBadge}>Vergangener Zeitraum</span>}
+          </div>
+          <p className={styles.resolution}>{selectedRange.resolution}</p>
 
-    const now = Date.now();
-    
-
-    return (
-        <Container>
-            <Title order={2}>Heinzungsteuerung Dashboard</Title>
-
-            <Stack gap={10}>
-              <Card shadow="md" padding="lg" mt="mt" withBorder>
-                  <Text size="lg">🌡️ Temperatur</Text>
-                  <Group mt="sm">
-                    <Text>Solar: {data.at(-1)?.solar ?? 0} °C</Text>
-                    <Text>Tank: {data.at(-1)?.pump ?? 0} °C</Text>
-                    <Text>Security: {data.at(-1)?.security ?? 0} °C</Text>
-                  </Group>
-
-                  <Text size="lg" mt="md">⚙️ Status</Text>
-                  <Switch checked={data.at(-1)?.rel==1} label={data.at(-1)?.rel==1 ? 'Pumpe ist AN' : 'Pumpe ist AUS'} readOnly />
-                  <Text pt={5}>Letzer Eintrag: {parseTime(new Date(status.time))}</Text>
-
-                  <Text size="lg" mt="md">🔧 Differenz</Text>
-                  <Group>
-                    <NumberInput value={status.dif} onChange={(val) => setStatus({time: status.time, dif: Number(val)})} min={0} max={20} />
-                    <Button onClick={updateDif}>Save</Button>
-                </Group>
-
-                <Text size="lg" mt="md">Aktualisiert: {time}</Text>
-                
-                <ActionIcon
-                  size="md" // or 'sm', 'lg', or exact like size={30}
-                  variant="default"
-                  onClick={() => window.location.reload()}
-                  aria-label="Reload"
-                >
-                  <IconRefresh size={18} />
-                </ActionIcon>
-              </Card>
-
-
-              <Card shadow="md" padding="lg" mt="mt" withBorder>
-                <Group mb="lg">
-                  <Button onClick={() => setTimePeriod('day')}  variant={timePeriod === 'day' ? 'filled' : 'light'}>Tag</Button>
-                  <Button onClick={() => setTimePeriod('month')} variant={timePeriod === 'month' ? 'filled' : 'light'}>Monat</Button>
-                  <Button onClick={() => setTimePeriod('year')}  variant={timePeriod === 'year' ? 'filled' : 'light'}>Jahr</Button>
-                </Group>
-
-                {chartMessage && <Text size="sm" role="status">{chartMessage}</Text>}
-                <LineChart
-                    h={300}
-                    withDots={chartData.length === 1}
-                    data={chartData.map((item) => ({ ...item, label: formatChartLabel(item.date, timePeriod) }))}
-                    dataKey="label"
-                    series={[
-                      { name: 'solar', color: 'yellow.6' },
-                      { name: 'pump', color: 'blue.6' },
-                      { name: 'security', color: 'red.6' },
-                    ]}
-                    strokeWidth={3}
-                    curveType="linear"
-                />
-              </Card>
-
-            </Stack>
-            
-        </Container>
-    )
+          {history.loading ? <div className={styles.chartState} role="status">Temperaturen werden geladen…</div>
+            : history.error && !history.data.length ? <div className={`${styles.chartState} ${styles.error}`} role="alert">{history.error}</div>
+            : !history.data.length ? <div className={styles.chartState} role="status">Keine Messdaten für {periodTitle} vorhanden.</div>
+            : <>
+              {history.error && <p className={styles.error} role="alert">{history.error}</p>}
+              <LineChart
+                h={280} withDots={history.data.length === 1}
+                data={history.data.map((item) => ({ ...item, label: formatChartLabel(item.date, range) }))}
+                dataKey="label" unit=" °C" strokeWidth={2.5} curveType="linear"
+                series={[{ name: 'solar', label: 'Solar', color: 'yellow.6' }, { name: 'pump', label: 'Tank', color: 'blue.6' }, { name: 'security', label: 'Security', color: 'red.6' }]}
+              />
+            </>}
+          <div className={styles.legend} aria-label="Temperaturreihen">{readings.map((reading) => <span key={reading.name}><i className={styles[reading.color]} />{reading.name}</span>)}</div>
+          <footer className={styles.chartFooter}><span>{currentPeriod ? 'Aktueller Zeitraum' : 'Historische Ansicht · Live-Werte oben bleiben aktuell'}</span><span>°C</span></footer>
+        </section>
+      </div>
+    </main>
+  );
 }

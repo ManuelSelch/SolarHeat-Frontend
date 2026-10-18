@@ -16,12 +16,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="de" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript forceColorScheme="light" />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider forceColorScheme="light">{children}</MantineProvider>
       </body>
     </html>
   );

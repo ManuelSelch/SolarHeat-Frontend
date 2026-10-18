@@ -38,9 +38,9 @@ test('formats daily labels as local 24-hour time without seconds', () => {
   assert.equal(formatChartLabel(new Date(2026, 9, 18, 0, 5).toISOString(), 'day'), '00:05');
 });
 
-test('preserves month and year labels', () => {
-  assert.equal(formatChartLabel('2026-10-18', 'month'), '2026-10-18');
-  assert.equal(formatChartLabel('2026-10', 'year'), '2026-10');
+test('uses compact day and month labels for monthly and yearly views', () => {
+  assert.equal(formatChartLabel('2026-10-18', 'month'), '18.');
+  assert.equal(formatChartLabel('2026-10', 'year'), 'Okt');
 });
 
 test('handles an empty range', () => {
