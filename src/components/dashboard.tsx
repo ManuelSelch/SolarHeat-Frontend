@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { LineChart } from '@mantine/charts';
 import { IconRefresh } from '@tabler/icons-react';
-import { filterDataByTimePeriod } from './temperature-data';
+import { normalizeChartData, type TemperatureChartPoint, type TemperatureHistory, type TemperatureRange } from './temperature-data';
 
 const backend = "https://solar-heat.manuelselch.de";
 
@@ -24,7 +24,9 @@ export default function Dashboard() {
     //#region state
     const [data, setData] = useState<Temperature[]>([]);
     const [status, setStatus] = useState<Status>({dif: 0, time: 0});
-    const [timePeriod, setTimePeriod] = useState('day');
+    const [timePeriod, setTimePeriod] = useState<TemperatureRange>('day');
+    const [chartData, setChartData] = useState<TemperatureChartPoint[]>([]);
+    const [chartMessage, setChartMessage] = useState<string | null>(null);
     const [time, setTime] = useState<string>("00:00");
     //#endregion
     
@@ -60,10 +62,35 @@ export default function Dashboard() {
 
     //#endregion
 
-    const chartData =  filterDataByTimePeriod(data, timePeriod).map((item, index) => ({
-      ...item,
-      date: index
-    }));
+    useEffect(() => {
+      const controller = new AbortController();
+      setChartData([]);
+      setChartMessage('Temperaturen werden geladen…');
+
+      const fetchChartTemperatures = async () => {
+        try {
+          const res = await axios.get<TemperatureHistory[]>(backend + '/temperatures', {
+            params: { range: timePeriod },
+            signal: controller.signal,
+          });
+          if (controller.signal.aborted) return;
+          const points = normalizeChartData(res.data);
+          setChartData(points);
+          setChartMessage(points.length ? null : 'Keine Temperaturen für diesen Zeitraum.');
+        } catch (err) {
+          if (controller.signal.aborted) return;
+          console.error('Failed to fetch chart temperatures:', err);
+          setChartMessage('Temperaturen konnten nicht geladen werden.');
+        }
+      };
+
+      fetchChartTemperatures();
+      const interval = setInterval(fetchChartTemperatures, 10000);
+      return () => {
+        controller.abort();
+        clearInterval(interval);
+      };
+    }, [timePeriod]);
 
     useEffect(() => {
       fetchStatus();
@@ -123,9 +150,10 @@ export default function Dashboard() {
                   <Button onClick={() => setTimePeriod('year')}  variant={timePeriod === 'year' ? 'filled' : 'light'}>Jahr</Button>
                 </Group>
 
+                {chartMessage && <Text size="sm" role="status">{chartMessage}</Text>}
                 <LineChart
                     h={300}
-                    withDots={false}
+                    withDots={chartData.length === 1}
                     data={chartData}
                     dataKey="date"
                     series={[
