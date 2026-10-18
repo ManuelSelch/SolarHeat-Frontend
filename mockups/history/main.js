@@ -65,13 +65,13 @@ showLastUpdate(new Date(Date.now() - 60000));
 
 $('refresh').addEventListener('click', () => {
   $('refresh').disabled = true;
-  $('refresh-label').textContent = 'Wird aktualisiert…';
+  $('refresh').setAttribute('aria-label', 'Wird aktualisiert…');
   document.querySelector('.live-card').setAttribute('aria-busy', 'true');
   // Simulated request only: do not reload the page or change the history selection.
   setTimeout(() => {
     showLastUpdate(new Date());
     $('refresh').disabled = false;
-    $('refresh-label').textContent = 'Aktualisieren';
+    $('refresh').setAttribute('aria-label', 'Aktualisieren');
     document.querySelector('.live-card').setAttribute('aria-busy', 'false');
   }, 650);
 });

@@ -27,13 +27,12 @@
           <input id="difference" name="difference" type="number" min="0" max="20" step="1" value="5" required aria-describedby="difference-status" />
           <button type="submit" class="save-button">Speichern</button>
         </div>
-        <span id="difference-status" class="save-status" role="status">Nur Vorschau · nicht gespeichert</span>
+        <span id="difference-status" class="save-status" role="status"></span>
       </form>
       <div class="live-footer">
         <p class="update-note" role="status">Zuletzt aktualisiert: <time id="last-update"></time></p>
-        <button class="refresh-button" id="refresh" type="button">
+        <button class="refresh-button" id="refresh" type="button" aria-label="Aktualisieren" title="Aktualisieren">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17"/></svg>
-          <span id="refresh-label">Aktualisieren</span>
         </button>
       </div>
     </section>

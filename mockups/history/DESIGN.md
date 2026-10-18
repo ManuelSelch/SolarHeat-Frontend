@@ -1,6 +1,6 @@
 # History navigation mockup
 
-- Revision: 2
+- Revision: 3
 - Review status: in review
 - Approval: not yet approved; production implementation is not authorized.
 
@@ -10,9 +10,9 @@ Explore selecting historical days, months, and years in the existing SolarHeat t
 ## Layout and interaction
 - Preserve the light cards, blue controls, and yellow/blue/red temperature series.
 - Keep a separate current-temperature card above the history chart, including pump status.
-- Show “Zuletzt aktualisiert” with local HH:mm:ss and an Aktualisieren button in the card footer.
+- Show “Zuletzt aktualisiert” with local HH:mm:ss and a black, icon-only refresh button in the card footer, with an accessible name and tooltip.
 - Refresh simulates a short pending state, disables the button temporarily, and updates the timestamp without resetting history navigation or the difference input.
-- Include a labeled Differenz (°C) number field (0–20, whole degrees, matching the current app) and Speichern button. Unsaved changes and simulated save confirmation are shown inline.
+- Include a labeled Differenz (°C) number field (0–20, whole degrees, matching the current app) and Speichern button. The initial status is blank (no preview disclaimer beside the input); unsaved changes and simulated save confirmation are shown inline.
 - Tag / Monat / Jahr controls the granularity; previous and next move one selected period.
 - A native date/month picker (numeric year input for Jahr) selects a period directly.
 - Heute / Dieser Monat / Dieses Jahr returns to the current period. Future navigation is disabled.
