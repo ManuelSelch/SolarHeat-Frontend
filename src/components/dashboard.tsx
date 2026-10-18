@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { LineChart } from '@mantine/charts';
+import { ChartTooltip, LineChart } from '@mantine/charts';
+import { useMediaQuery } from '@mantine/hooks';
 import { IconChevronLeft, IconChevronRight, IconRefresh } from '@tabler/icons-react';
 import { getHistory } from './temperature-api';
 import {
-  chartPointsForPeriod, dateInputValue, formatChartLabel, formatPeriodTitle,
+  chartPointsForPeriod, dateInputValue, dayAxisMinutes, dayAxisTicks, formatDayAxisTick, formatChartLabel, formatPeriodTitle,
   normalizeChartData, parsePeriodInput, periodKey, shiftPeriod,
   type TemperatureChartPoint, type TemperatureRange,
 } from './temperature-data';
@@ -45,6 +46,7 @@ function PeriodPicker({ date, range, today, onChange }: {
 }
 
 export default function Dashboard() {
+  const compactChart = useMediaQuery('(max-width: 600px)');
   const { live, lastUpdated, refreshing, liveError, refresh, saving, saveError, save } = useLiveTemperatures();
   const [range, setRange] = useState<TemperatureRange>('day');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -185,8 +187,20 @@ export default function Dashboard() {
               {history.error && <p className={styles.error} role="alert">{history.error}</p>}
               <LineChart
                 h={280} withDots={history.data.length === 1}
-                data={history.data.map((item) => ({ ...item, label: formatChartLabel(item.date, range) }))}
+                data={history.data.map((item) => ({ ...item, label: range === 'day' ? dayAxisMinutes(item.date) : formatChartLabel(item.date, range) }))}
                 dataKey="label" unit=" °C" strokeWidth={2.5} curveType="linear"
+                xAxisProps={range === 'day' ? {
+                  type: 'number', domain: [0, 1440], allowDataOverflow: true,
+                  ticks: dayAxisTicks(compactChart ? 4 : 1), interval: 0,
+                  tickFormatter: formatDayAxisTick, tick: { fontSize: 10 },
+                } : undefined}
+                tooltipProps={range === 'day' ? {
+                  content: ({ payload }) => <ChartTooltip
+                    label={payload?.[0]?.payload?.date ? formatChartLabel(payload[0].payload.date, 'day') : undefined}
+                    payload={payload ?? []} unit=" °C"
+                    series={[{ name: 'solar', label: 'Solar', color: 'yellow.6' }, { name: 'pump', label: 'Tank', color: 'blue.6' }, { name: 'security', label: 'Security', color: 'red.6' }]}
+                  />,
+                } : undefined}
                 series={[{ name: 'solar', label: 'Solar', color: 'yellow.6' }, { name: 'pump', label: 'Tank', color: 'blue.6' }, { name: 'security', label: 'Security', color: 'red.6' }]}
               />
             </>}

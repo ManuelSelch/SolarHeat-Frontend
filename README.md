@@ -30,6 +30,8 @@ The dashboard sends `GET /temperatures?range=day|month|year&date=YYYY-MM-DD`.
 
 The frontend is ready for `date`; **backend support is still pending**. Responses containing only a different period are not displayed under the selected historical date. Instead, the UI explains that the backend needs updating. An actual empty array produces the normal empty state.
 
+The day chart uses a fixed local wall-clock X-axis from 00:00 to 24:00, with hourly ticks (every four hours on narrow screens). Measurements retain their original times and values; absent/future hours remain blank. Tooltips show the actual reading time. On a daylight-saving fallback day, repeated local clock times share the same X-coordinate.
+
 Live readings always request today's date independently of the history selection. The app opens on today (the mockup initially used yesterday only to demonstrate history). Live and chart data refresh every 10 seconds. The refresh icon reloads live readings/status without reloading the page or losing unsaved difference edits.
 
 `Zuletzt aktualisiert` is the time of a successful frontend refresh; `Letzter Eintrag` is the machine timestamp from `/temperatures/status` (`time`, milliseconds since epoch). Saving sends `{ "dif": number }` to the existing `POST /temperatures/dif` endpoint. A draft is not overwritten by background polling.

@@ -23,6 +23,20 @@ export function formatChartLabel(date: string, range: TemperatureRange): string 
   return `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
 }
 
+// A fixed local wall-clock axis: missing/future hours remain blank.
+export function dayAxisMinutes(timestamp: string): number {
+  const date = new Date(timestamp);
+  return date.getHours() * 60 + date.getMinutes() + date.getSeconds() / 60;
+}
+
+export function dayAxisTicks(stepHours = 1): number[] {
+  return Array.from({ length: 24 / stepHours + 1 }, (_, index) => index * stepHours * 60);
+}
+
+export function formatDayAxisTick(minutes: number): string {
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:00`;
+}
+
 export function dateInputValue(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
